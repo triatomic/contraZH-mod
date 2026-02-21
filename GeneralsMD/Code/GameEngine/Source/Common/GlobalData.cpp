@@ -715,6 +715,7 @@ GlobalData::GlobalData()
 	m_maxTankTrackOpaqueEdges=25;
 	m_maxTankTrackFadeDelay=300000;
 
+	m_isTransitioningTOD = FALSE;
 	m_timeOfDay = TIME_OF_DAY_AFTERNOON;
 	m_weather = WEATHER_NORMAL;
 	m_makeTrackMarks = FALSE;

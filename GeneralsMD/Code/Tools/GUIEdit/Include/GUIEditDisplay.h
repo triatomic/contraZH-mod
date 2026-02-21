@@ -106,7 +106,8 @@ public:
 
 	// methods that we need to stub
 	virtual void setTimeOfDay( TimeOfDay tod ) {}
-	virtual void createLightPulse( const Coord3D *pos, const RGBColor *color, Real innerRadius, Real attenuationWidth,
+	virtual void updateInterpolatedLighting() {}
+	virtual void createLightPulse( const Coord3D *pos, const RGBColor *color, Real innerRadius, Real attenuationWidth, 
 																 UnsignedInt increaseFrameTime, UnsignedInt decayFrameTime ) {}
 	virtual void setShroudLevel(Int x, Int y, CellShroudStatus setting) {}
 	void setBorderShroudLevel(UnsignedByte level){}

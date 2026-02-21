@@ -943,6 +943,18 @@ void GameClient::setTimeOfDay( TimeOfDay tod )
 	}
 }
 
+void GameClient::setTimeOfDayNonInterpolated( TimeOfDay tod , Bool updateAmbientSfx)
+{
+	Drawable *draw = firstDrawable();
+
+	while( draw )
+	{
+		draw->setTimeOfDay( tod , updateAmbientSfx );
+
+		draw = draw->getNextDrawable();
+	}
+}
+
 //-------------------------------------------------------------------------------------------------
 void GameClient::assignSelectedDrawablesToGroup( Int group )
 {

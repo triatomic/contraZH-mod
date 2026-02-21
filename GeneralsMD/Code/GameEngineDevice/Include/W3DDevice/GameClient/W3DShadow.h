@@ -55,6 +55,8 @@ public:
 	void setStencilShadowMask(int mask) {m_stencilShadowMask=mask;}	///<mask used to mask out stencil bits used for storing occlusion/playerColor
 	Int getStencilShadowMask(void)	{return m_stencilShadowMask;}
 
+	void updateInterpolatedLighting();
+
 	// rendering
 	void RenderShadows( void );
 	void ReleaseResources(void);

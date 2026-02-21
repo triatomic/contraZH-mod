@@ -639,6 +639,8 @@ UnsignedInt W3DTreeBuffer::doLighting(const Vector3 *normal,
 	shadeG = objectLighting[0].ambient.green+emissive->Y;
 	shadeB = objectLighting[0].ambient.blue+emissive->Z;
 
+	DEBUG_LOG(("Shader: %d\n", shadeR));
+
 	Int i;
 	for	(i=0; i<MAX_GLOBAL_LIGHTS; i++) {
 		Vector3 lightDirection(objectLighting[i].lightPos.x, objectLighting[i].lightPos.y, objectLighting[i].lightPos.z);
@@ -708,7 +710,7 @@ void W3DTreeBuffer::loadTreesInVertexAndIndexBuffers(RefRenderObjListIterator *p
 	m_anythingChanged = false;
 	Int curTree=0;
 	Int bNdx;
-	const GlobalData::TerrainLighting *objectLighting = TheGlobalData->m_terrainObjectsLighting[TheGlobalData->m_timeOfDay];
+	const GlobalData::TerrainLighting *objectLighting = TheGlobalData->m_terrainObjectsLighting[0];
 	for (bNdx=0; bNdx<MAX_BUFFERS; bNdx++) {
 		m_curNumTreeVertices[bNdx] = 0;
 		m_curNumTreeIndices[bNdx] = 0;

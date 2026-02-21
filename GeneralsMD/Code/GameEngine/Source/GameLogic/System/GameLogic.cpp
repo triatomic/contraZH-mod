@@ -143,6 +143,10 @@ GameLogic *TheGameLogic = nullptr;
 
 static void findAndSelectCommandCenter(Object *obj, void* alreadyFound);
 
+static DWORD s_lastTODTick = 0;
+static float s_todAccum = 0.0f;
+static const float TOD_INTERVAL = 30.0f; // seconds per TOD step
+
 
 // ------------------------------------------------------------------------------------------------
 /** This enum is for loading screen bar progress */
@@ -3822,12 +3826,137 @@ void GameLogic::update( void )
 
 
 
+	// 	TimeOfDay tod = TimeOfDay((Int)TheGlobalData->m_timeOfDay + 1);
+	// 	if (tod >= TIME_OF_DAY_COUNT)
+	// 		tod = TIME_OF_DAY_FIRST;
 
+	// 	TheWritableGlobalData->setTimeOfDay(tod);
+	// 	TheGameClient->setTimeOfDay(TheGlobalData->m_timeOfDay);
+	// }
+	// // DEBUG_LOG(("running"));
 
 	// increment world time
 	if (!m_startNewGame)
 	{
 		m_frame++;
+
+		// --- Persistent TOD transition state ---
+		static float    timeAccumulator      = 0.0f;
+		static TimeOfDay currentTOD           = TIME_OF_DAY_INVALID;
+		static TimeOfDay nextTOD              = TIME_OF_DAY_INVALID;
+		static TimeOfDay lastSeenGlobalTOD    = TIME_OF_DAY_INVALID;
+
+		const float secondsPerTOD = 60.0f;        // 60 seconds per TOD transition
+		const float deltaTime     = 1.0f / 60.0f; // ~60 FPS
+
+		TimeOfDay globalTOD = TheGlobalData->m_timeOfDay;
+
+		// --- Initial sync ---
+		if (currentTOD == TIME_OF_DAY_INVALID)
+		{
+			currentTOD        = globalTOD;
+			nextTOD           = TimeOfDay((int)currentTOD + 1);
+			if (nextTOD >= TIME_OF_DAY_COUNT)
+				nextTOD = TIME_OF_DAY_FIRST;
+
+			lastSeenGlobalTOD = globalTOD;
+			timeAccumulator  = 0.0f;
+		}
+
+		// --- External TOD change detection ---
+		if (globalTOD != lastSeenGlobalTOD)
+		{
+			DEBUG_LOG(("External TOD change detected: %d -> %d",
+				lastSeenGlobalTOD, globalTOD));
+
+			// Hard reset transition state
+			currentTOD        = globalTOD;
+			nextTOD           = TimeOfDay((int)currentTOD + 1);
+			if (nextTOD >= TIME_OF_DAY_COUNT)
+				nextTOD = TIME_OF_DAY_FIRST;
+
+			timeAccumulator  = 0.0f;
+			TheWritableGlobalData->m_isTransitioningTOD = FALSE;
+
+			lastSeenGlobalTOD = globalTOD;
+		}
+
+		// --- Advance time ---
+		timeAccumulator += deltaTime;
+
+		float interp = timeAccumulator / secondsPerTOD;
+		if (interp > 1.0f)
+			interp = 1.0f;
+
+		TheWritableGlobalData->m_isTransitioningTOD = (interp < 1.0f);
+
+		// --- Interpolate lighting ---
+			
+		for (int i = 0; i < MAX_GLOBAL_LIGHTS; i++)
+		{
+			// Ambient
+			TheWritableGlobalData->m_terrainAmbient[i].red   =
+				TheGlobalData->m_terrainLighting[currentTOD][i].ambient.red * (1.0f - interp) +
+				TheGlobalData->m_terrainLighting[nextTOD][i].ambient.red * interp;
+			TheWritableGlobalData->m_terrainAmbient[i].green =
+				TheGlobalData->m_terrainLighting[currentTOD][i].ambient.green * (1.0f - interp) +
+				TheGlobalData->m_terrainLighting[nextTOD][i].ambient.green * interp;
+			TheWritableGlobalData->m_terrainAmbient[i].blue  =
+				TheGlobalData->m_terrainLighting[currentTOD][i].ambient.blue * (1.0f - interp) +
+				TheGlobalData->m_terrainLighting[nextTOD][i].ambient.blue * interp;
+
+			// Diffuse
+			TheWritableGlobalData->m_terrainDiffuse[i].red   =
+				TheGlobalData->m_terrainLighting[currentTOD][i].diffuse.red * (1.0f - interp) +
+				TheGlobalData->m_terrainLighting[nextTOD][i].diffuse.red * interp;
+			TheWritableGlobalData->m_terrainDiffuse[i].green =
+				TheGlobalData->m_terrainLighting[currentTOD][i].diffuse.green * (1.0f - interp) +
+				TheGlobalData->m_terrainLighting[nextTOD][i].diffuse.green * interp;
+			TheWritableGlobalData->m_terrainDiffuse[i].blue  =
+				TheGlobalData->m_terrainLighting[currentTOD][i].diffuse.blue * (1.0f - interp) +
+				TheGlobalData->m_terrainLighting[nextTOD][i].diffuse.blue * interp;
+
+			TheWritableGlobalData->m_terrainObjectsLighting[0][i].diffuse.red =
+				TheGlobalData->m_terrainObjectsLighting[currentTOD][i].diffuse.red * (1.0f - interp) +
+				TheGlobalData->m_terrainObjectsLighting[nextTOD][i].diffuse.red * interp;
+			TheWritableGlobalData->m_terrainObjectsLighting[0][i].diffuse.green =
+				TheGlobalData->m_terrainObjectsLighting[currentTOD][i].diffuse.green * (1.0f - interp) +
+				TheGlobalData->m_terrainObjectsLighting[nextTOD][i].diffuse.green * interp;
+			TheWritableGlobalData->m_terrainObjectsLighting[0][i].diffuse.blue =
+				TheGlobalData->m_terrainObjectsLighting[currentTOD][i].diffuse.blue * (1.0f - interp) +
+				TheGlobalData->m_terrainObjectsLighting[nextTOD][i].diffuse.blue * interp;
+
+			// **Light Position**
+			TheWritableGlobalData->m_terrainLightPos[i].x =
+				TheGlobalData->m_terrainLighting[currentTOD][i].lightPos.x * (1.0f - interp) +
+				TheGlobalData->m_terrainLighting[nextTOD][i].lightPos.x * interp;
+			TheWritableGlobalData->m_terrainLightPos[i].y =
+				TheGlobalData->m_terrainLighting[currentTOD][i].lightPos.y * (1.0f - interp) +
+				TheGlobalData->m_terrainLighting[nextTOD][i].lightPos.y * interp;
+			TheWritableGlobalData->m_terrainLightPos[i].z =
+				TheGlobalData->m_terrainLighting[currentTOD][i].lightPos.z * (1.0f - interp) +
+				TheGlobalData->m_terrainLighting[nextTOD][i].lightPos.z * interp;
+		}
+
+		// Advance TOD when 60 seconds elapsed
+		if (timeAccumulator >= secondsPerTOD)
+		{
+			timeAccumulator = 0.0f;
+			currentTOD = nextTOD;
+			nextTOD = TimeOfDay((int)currentTOD + 1);
+			if (nextTOD >= TIME_OF_DAY_COUNT)
+				nextTOD = TIME_OF_DAY_FIRST;
+
+			TheWritableGlobalData->setTimeOfDay(currentTOD);
+			TheGameClient->setTimeOfDayNonInterpolated(TheGlobalData->m_timeOfDay, true);
+
+		}
+
+		// the transition check is required for the non looping actions hit by our change 
+		// if (timeAccumulator >= secondsPerTOD)
+		// 	TheWritableGlobalData->m_isTransitioningTOD = FALSE;
+
+		TheGameClient->setTimeOfDay(TheGlobalData->m_timeOfDay);
 		m_hasUpdated = TRUE;
 	}
 }

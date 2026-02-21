@@ -423,7 +423,7 @@ public:
 	void startAmbientSound( Bool onlyIfPermanent = false );
 	void stopAmbientSound( void );
 	void enableAmbientSound( Bool enable );
-	void setTimeOfDay( TimeOfDay tod );
+	void setTimeOfDay( TimeOfDay tod , Bool updateAmbientSfx = false);
   Bool getAmbientSoundEnabledFromScript( void ) const { return m_ambientSoundEnabledFromScript; }
 
 	void prependToList(Drawable **pListHead);

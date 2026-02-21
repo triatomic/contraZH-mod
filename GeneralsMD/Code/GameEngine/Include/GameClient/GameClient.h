@@ -131,7 +131,8 @@ public:
 	virtual Drawable *friend_createDrawable( const ThingTemplate *thing, DrawableStatusBits statusBits = DRAWABLE_STATUS_DEFAULT ) = 0;
 	virtual void destroyDrawable( Drawable *draw );											///< Destroy the given drawable
 
-	virtual void setTimeOfDay( TimeOfDay tod );													///< Tell all the drawables what time of day it is now
+	virtual void setTimeOfDay( TimeOfDay tod );		
+	virtual void setTimeOfDayNonInterpolated( TimeOfDay tod , Bool updateAmbientSfx);											///< Tell all the drawables what time of day it is now
 
 	virtual void selectDrawablesInGroup( Int group );									///< select all drawables belong to the specifies group
 	virtual void assignSelectedDrawablesToGroup( Int group );						///< assign all selected drawables to the specified group

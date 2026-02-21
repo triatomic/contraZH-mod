@@ -2137,6 +2137,57 @@ void W3DDisplay::setTimeOfDay( TimeOfDay tod )
 	}
 }
 
+void W3DDisplay::updateInterpolatedLighting()
+{
+    if (!m_3DScene)
+        return;
+
+    // Use the interpolated ambient from TheWritableGlobalData
+    // Take the first light as the global ambient reference
+    Vector3 globalAmbient(
+        TheWritableGlobalData->m_terrainAmbient[0].red,
+        TheWritableGlobalData->m_terrainAmbient[0].green,
+        TheWritableGlobalData->m_terrainAmbient[0].blue
+    );
+    m_3DScene->Set_Ambient_Light(globalAmbient);
+
+    // Update all lights in the scene
+    for (int i = 0; i < LightEnvironmentClass::MAX_LIGHTS; i++)
+    {
+        if (!m_myLight[i])
+            continue;
+
+        // Read interpolated values
+        Vector3 diffuse(
+			TheWritableGlobalData->m_terrainObjectsLighting[0][i].diffuse.red,
+			TheWritableGlobalData->m_terrainObjectsLighting[0][i].diffuse.green,
+			TheWritableGlobalData->m_terrainObjectsLighting[0][i].diffuse.blue
+        );
+
+        Vector3 lightPos(
+            TheWritableGlobalData->m_terrainObjectsLighting[0][i].lightPos.x,
+            TheWritableGlobalData->m_terrainObjectsLighting[0][i].lightPos.y,
+            TheWritableGlobalData->m_terrainObjectsLighting[0][i].lightPos.z
+        );
+
+        // Apply to light
+        m_myLight[i]->Set_Ambient(Vector3(0, 0, 0)); // keep ambient zero per light
+        m_myLight[i]->Set_Diffuse(diffuse);
+        m_myLight[i]->Set_Specular(Vector3(0, 0, 0));
+
+        Matrix3D mtx;
+        mtx.Set(Vector3(1,0,0), Vector3(0,1,0), lightPos, Vector3(0,0,0));
+        m_myLight[i]->Set_Transform(mtx);
+    }
+
+    // Update terrain rendering and tactical view
+    if (TheTerrainRenderObject)
+    {
+        TheTerrainRenderObject->setTimeOfDay(TheGlobalData->m_timeOfDay); // optional: discrete TOD if needed
+        TheTacticalView->forceRedraw();
+    }
+}
+
 // W3DDisplay::drawLine =======================================================
 /** draw a line on the display in pixel coordinates with the specified color */
 //=============================================================================

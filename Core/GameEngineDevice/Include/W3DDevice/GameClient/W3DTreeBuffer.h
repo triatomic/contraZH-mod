@@ -204,6 +204,8 @@ public:
 	void setIsTerrain(void) {m_isTerrainPass = true;}; ///< Terrain calls this to tell trees to draw.
 	Bool needToDraw(void) {return m_isTerrainPass;};
 
+	void setChangedToTrue(void) {m_anythingChanged = true;};
+
 	Int getNumTiles(void) {return m_numTiles;}
 	TileData *getSourceTile(Int ndx) {return m_sourceTiles[ndx];}
 	void allocateTreeBuffers(void);							 ///< Allocates the buffers.

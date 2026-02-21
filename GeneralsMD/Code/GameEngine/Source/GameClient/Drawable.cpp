@@ -4364,13 +4364,15 @@ UnicodeString Drawable::getCaptionText( void )
 //-------------------------------------------------------------------------------------------------
 /** Attach and start playing an ambient sound to this drawable */
 //-------------------------------------------------------------------------------------------------
-void	Drawable::setTimeOfDay(TimeOfDay tod)
+void	Drawable::setTimeOfDay(TimeOfDay tod, Bool updateAmbientSfx)
 {
 	BodyDamageType dt = BODY_PRISTINE;
 	if (getObject() && getObject()->getBodyModule())
 		dt = getObject()->getBodyModule()->getDamageState();
 
-	startAmbientSound(dt, tod);
+	if(updateAmbientSfx){
+		startAmbientSound(dt, tod);
+	}
 
 	ModelConditionFlags c = m_conditionState;
 	c.set(MODELCONDITION_NIGHT, (tod == TIME_OF_DAY_NIGHT) ? 1 : 0);

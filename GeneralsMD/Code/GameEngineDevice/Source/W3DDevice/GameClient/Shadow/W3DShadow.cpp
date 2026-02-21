@@ -249,3 +249,28 @@ void W3DShadowManager::setTimeOfDay(TimeOfDay tod)
 
 	setLightPosition(0, lightRay.X, lightRay.Y, lightRay.Z);
 }
+
+
+void W3DShadowManager::updateInterpolatedLighting()
+{
+    // Access the runtime interpolated light positions directly
+	Vector3 lightPosArray[MAX_GLOBAL_LIGHTS];
+
+	for (int i = 0; i < MAX_GLOBAL_LIGHTS; i++)
+	{
+		lightPosArray[i].X = TheWritableGlobalData->m_terrainLightPos[i].x;
+		lightPosArray[i].Y = TheWritableGlobalData->m_terrainLightPos[i].y;
+		lightPosArray[i].Z = TheWritableGlobalData->m_terrainLightPos[i].z;
+	}
+
+    for (int b = 0; b < MAX_GLOBAL_LIGHTS; b++)
+    {
+        // Compute light ray
+        Vector3 lightRay(-lightPosArray[b].X, -lightPosArray[b].Y, -lightPosArray[b].Z);
+        lightRay.Normalize();
+        lightRay *= SUN_DISTANCE_FROM_GROUND;
+
+        // Update shadow light
+        setLightPosition(b, lightRay.X, lightRay.Y, lightRay.Z);
+    }
+}

@@ -226,6 +226,8 @@ public:
 	Real m_getHealedAnimationDisplayTimeInSeconds;		///< time to play animation for
 	Real m_getHealedAnimationZRisePerSecond;					///< rise animation up while playing
 
+
+	Bool m_isTransitioningTOD;
 	TimeOfDay	m_timeOfDay;
 	Weather m_weather;
 	Bool m_makeTrackMarks;

@@ -86,6 +86,7 @@ public:
 																 UnsignedInt increaseFrameTime, UnsignedInt decayFrameTime//, Bool donut = FALSE
 																 );
 	virtual void setTimeOfDay ( TimeOfDay tod );
+	virtual void updateInterpolatedLighting();
 
 	/// draw a line on the display in screen coordinates
 	virtual void drawLine( Int startX, Int startY, Int endX, Int endY,
