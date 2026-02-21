@@ -509,7 +509,7 @@ BOOL CWorldBuilderApp::InitInstance()
 	selectPointerTool();   
 
 	AfxMessageBox(
-		"WARNING: This build of WorldBuilder is a work in progress.\n"
+		"WARNING: This build of WorldBuilder is a work in progress. \n"
 		"Unauthorized use or distribution without notifying Adriane [Deathscythe] is discouraged.\n\n"
 		"This version is still in testing and may corrupt or break your map, so please make a backup before using it.\n\n"
 		"Build Version: 1428b8848\n"
